@@ -10,12 +10,12 @@ output:
 #### Pilot: Sara Kessler
 #### Co-pilot: Tom Hardwicke  
 #### Start date: 03/20/2017
-#### End date: [Insert end date - use US format]   
+#### End date: 03/20/2017   
 
 -------
 
 #### Methods summary: 
-[Write a brief summary of the methods underlying the target outcomes written in your own words]
+
 Arnold, et al. (2016) investigate whether temporal information from previous experiences is retained in mental simulations, hypothesizing that "simulated episodes contain temporal aspects of the experiences  the simulation is recapitulated from, albeit in a compressed form" (Arnold et al., 2016, p. 15). In order to investigate this question, participants were shown a video from a first person perspective of a walk around the perimeter of a virtual city which had five visually salient landmarks in it. The landmarks were pointed out and introduced. Participants then underwent 20 encoding trials in which they had to navigate between two landmarks, as quickly as possible. Finally, the participants had a simulation phase where they shown images of two landmarks and then had to close their eyes and mentally simulate navigating from one to the other, imagining their route in detail.  They were asked to use the quickest route possible, not necessarily one they had used in the encoding phase. After the mental simulation they answered a questionnaire to probe qualitative aspects of the simulations. Then they had to navigate the actual route in the virtual city as quickly as possible, followed by another questionnaire about how well they navigated the route, and how closely their simulation matched the actual navigation. There were 10 routes in the simulation phase. 
 
 ------
@@ -84,6 +84,7 @@ d <- d_tidy %>%
 summary(d$diff)
 mean_diff = mean(d$diff)
 sd_diff = sd(d$diff)
+sd_diff
 
 compareValues(reportedValue = 14.27, obtainedValue = mean_diff)
 compareValues(reportedValue = 19.49, obtainedValue = sd_diff)
@@ -101,7 +102,9 @@ ggplot(d, aes(x=diff)) +
 ![Supplementary Figure 1 - Distribution of difference scores](images/fig_s1.png)
 
 
+The distribution does not seem to quite match, between my figure and the one in the paper, and although the outliers are similar, the first two bins are different. The code in the supplementary material paper seems to indicate that they also used bins of 20.
 
+>sns.distplot(p_data.Diff.dropna(), kde=False, bins=20);
 
 ```{r}
 #get rid of the top 25% of difference times
@@ -111,7 +114,7 @@ d <- d%>%
 
 ```
 
-The top quatile matches what was reported in the paper, and the same number of trials were filtered out using this criterion. However, it does not match what was reported in the text of the supplemental materials (14.95 s), though it does match the number in the print-out of the code calculating it.
+The top quantile matches what was reported in the paper, and the same number of trials were filtered out using this criterion. However, it does not match what was reported in the text of the supplemental materials (14.95 s), though it does match the number in the print-out of the code calculating it.
 ```{r}
 compareValues(reportedValue = 14.95, obtainedValue = top_quant)
 ```
@@ -135,7 +138,7 @@ sd_diff_filt = sd(d$diff)
 compareValues(reportedValue = 5.93, obtainedValue = mean_diff_filt)
 compareValues(reportedValue = 3.54, obtainedValue = sd_diff_filt)
 ```
-There is a discrepency in the mean difference scores reported post filtering in the paper, and those I found, as well as in the SD.
+There is a discrepancy in the mean difference scores reported post filtering in the paper, and those I found, as well as in the SD.
 
 ```{r}
 mean_sim_time = mean(d$sim_time)
@@ -158,9 +161,10 @@ d_g1<-d%>%
   summarize(mean = mean(obs_route_time),
             cis = ci95(obs_route_time))
 ggplot(data=d_g1, aes(x=group, y=mean)) +
-    geom_bar(stat="identity") +
+    geom_bar(stat="identity", fill="#FF6600") +
     geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
-                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Route Time")
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Route Time") +
+  scale_x_discrete(breaks=NULL)
 ```
 
 ```{r}
@@ -170,16 +174,17 @@ d_g2<-d%>%
   summarize(mean = mean(sim_time),
             cis = ci95(sim_time))
 ggplot(data=d_g2, aes(x=group, y=mean)) +
-    geom_bar(stat="identity") +
+    geom_bar(stat="identity", fill="#FF6600") +
     geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
-                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Simulation Time")
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Simulation Time") +
+  scale_x_discrete(breaks=NULL)
 ```
 
 
 
-![Figure 2 - Distribution of difference scores](images/fig_2.png)
+![Figure 2](images/fig_2.png)
 
-
+My figures seem to match the middle (orange) bars of Figures 2a and 2b.
 
 
 ```{r}
@@ -219,7 +224,7 @@ cor.test(d$obs_route_time, d$distance)
 (cor(d$obs_route_time, d$distance))^2
 ```
 
-Additionally, as in the paper, the route navigation times and the route distance are highly colinear, thereforeroute time is used throughout the rest of the analysis.
+Additionally, as in the paper, the route navigation times and the route distance are highly colinear, therefore route time is used throughout the rest of the analysis.
 
 ```{r}
 d<- d %>%
@@ -232,7 +237,9 @@ sd_comp
 
 ```
 
-The compression rate was calculated as the ratio of the (uncentered) simulation times to the route time for each trial. I found the same mean and SD compression rate as found by Arnold et al. (2016), supporting their hypothesis that "participants simulated routes at around 2.39 times te rate the subsequently navigate them." (Arnold et al., 2016, p. 17)
+The compression rate was calculated as the ratio of the (uncentered) simulation times to the route time for each trial. I found the same mean and SD compression rate as found by Arnold et al. (2016), supporting their hypothesis that 
+
+>"participants simulated routes at around 2.39 times the rate the subsequently navigate them." (Arnold et al., 2016, p. 17)
 
 
 ```{r}
@@ -242,15 +249,16 @@ d_g3<-d%>%
   summarize(mean = 1/mean(compression_rate),
             cis = ci95(compression_rate))
 ggplot(data=d_g3, aes(x=group, y=mean)) +
-    geom_bar(stat="identity") +
+    geom_bar(stat="identity", fill="#FF6600") +
     geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
-                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Factor") + ggtitle("Compression Rate")
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Factor") + ggtitle("Compression Rate") +
+  scale_x_discrete(breaks=NULL)
 ```
 
 
 ![Figure 2](images/fig_2.png)
 
-I'm not sure exactly what the error bar is reprecenting in Figure 2c, since the calculation was 1/compression rate.
+I'm not sure exactly what the error bar is representing in Figure 2c, since the calculation was 1/compression rate. The bar itself though that I generated matches the middle (orange) bar in Figure 2c.
 
 
 ## Step 5: Conclusion
@@ -264,7 +272,7 @@ codReport(Report_Type = 'pilot',
           Minor_Numerical_Errors = 1)
 ```
 
-I found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. These discrepencies could be related since they involve the same measure. I am not sure what might have caused the discrepency though. Additionally the top quantile cut-off point reported in the text of the supplement was off, but that was probably calculated using a previous version of the data, and then hard coded in instead of using a variable. There was a minor discrepency in the reporting of the SD of optimal time route earlier in the paper.
+I found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. These discrepancies could be related since they involve the same measure. I am not sure what might have caused the discrepancy though. Additionally the top quantile cut-off point reported in the text of the supplement was off, but that was probably calculated using a previous version of the data, and then hard coded in instead of using a variable. There was a minor discrepancy in the reporting of the SD of optimal time route earlier in the paper. Finally, it is not clear how the confidence interval in Figure 2c in the paper is determined.
 
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
