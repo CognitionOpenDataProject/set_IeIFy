@@ -41,6 +41,8 @@ library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
 library(CODreports) # custom report functions
+sem <- function(x) {sd(x, na.rm=TRUE) / sqrt(length(x))}
+ci95 <- function(x) {sem(x) * 1.96}
 ```
 
 ## Step 2: Load data
@@ -137,13 +139,48 @@ There is a discrepency in the mean difference scores reported post filtering in 
 
 ```{r}
 mean_sim_time = mean(d$sim_time)
+mean_sim_time
 sd_sim_time = sd(d$sim_time)
+sd_sim_time
 
 mean_nav_time = mean(d$obs_route_time)
+mean_nav_time
 sd_nav_time = sd(d$obs_route_time)
+sd_nav_time
 ```
 
 The reported mean and SD for simulation time and route navigation times match those that I found here.
+
+```{r}
+d_g1<-d%>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = mean(obs_route_time),
+            cis = ci95(obs_route_time))
+ggplot(data=d_g1, aes(x=group, y=mean)) +
+    geom_bar(stat="identity") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Route Time")
+```
+
+```{r}
+d_g2<-d%>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = mean(sim_time),
+            cis = ci95(sim_time))
+ggplot(data=d_g2, aes(x=group, y=mean)) +
+    geom_bar(stat="identity") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Simulation Time")
+```
+
+
+
+![Figure 2 - Distribution of difference scores](images/fig_2.png)
+
+
+
 
 ```{r}
 #mean center the simulation times for each participant then rejoin them with the rest of the data.
@@ -188,23 +225,47 @@ Additionally, as in the paper, the route navigation times and the route distance
 d<- d %>%
   mutate(compression_rate = sim_time/obs_route_time)
 mean_comp = mean(d$compression_rate)
+mean_comp
 sd_comp = sd(d$compression_rate)
+sd_comp
+
 
 ```
 
 The compression rate was calculated as the ratio of the (uncentered) simulation times to the route time for each trial. I found the same mean and SD compression rate as found by Arnold et al. (2016), supporting their hypothesis that "participants simulated routes at around 2.39 times te rate the subsequently navigate them." (Arnold et al., 2016, p. 17)
 
 
+```{r}
+d_g3<-d%>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = 1/mean(compression_rate),
+            cis = ci95(compression_rate))
+ggplot(data=d_g3, aes(x=group, y=mean)) +
+    geom_bar(stat="identity") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Factor") + ggtitle("Compression Rate")
+```
+
+
+![Figure 2](images/fig_2.png)
+
+I'm not sure exactly what the error bar is reprecenting in Figure 2c, since the calculation was 1/compression rate.
 
 
 ## Step 5: Conclusion
 
 ```{r}
+codReport(Report_Type = 'pilot',
+          Article_ID = 'IeIFy', 
+          Insufficient_Information_Errors = 0,
+          Decision_Errors = 0, 
+          Major_Numerical_Errors = 5, 
+          Minor_Numerical_Errors = 1)
 ```
 
-[Please also include a brief text summary describing your findings. If this reproducibility check was a failure, you should note any suggestions as to what you think the likely cause(s) might be.]
+I found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. These discrepencies could be related since they involve the same measure. I am not sure what might have caused the discrepency though. Additionally the top quantile cut-off point reported in the text of the supplement was off, but that was probably calculated using a previous version of the data, and then hard coded in instead of using a variable. There was a minor discrepency in the reporting of the SD of optimal time route earlier in the paper.
 
-[This function will output information about the package versions used in this report:]
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
