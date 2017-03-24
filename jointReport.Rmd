@@ -1,0 +1,324 @@
+---
+title: "COD Reproducibility Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+#### Article ID: IeIFy
+#### Pilot: Sara Kessler
+#### Co-pilot: Tom Hardwicke  
+#### Start date: 03/20/2017
+#### End date:   
+
+-------
+
+#### Methods summary: 
+
+Arnold et al. (2016) investigated whether temporal information from previous experiences is retained in mental simulations, hypothesizing that "simulated episodes contain temporal aspects of the experiences the simulation is recapitulated from, albeit in a compressed form" (Arnold et al., 2016, p. 15). In order to investigate this question, participants were shown a video from a first person perspective of a walk around the perimeter of a virtual city which had five visually salient landmarks in it. The landmarks were pointed out and introduced. Participants then underwent 20 encoding trials in which they had to navigate between two landmarks, as quickly as possible. Finally, the participants had a simulation phase where they were shown images of two landmarks and then had to close their eyes and mentally simulate navigating from one to the other, imagining their route in detail.  They were asked to use the quickest route possible, not necessarily one they had used in the encoding phase. After the mental simulation they answered a questionnaire to probe qualitative aspects of the simulations. Then they had to navigate the actual route in the virtual city as quickly as possible, followed by another questionnaire about how well they navigated the route, and how closely their simulation matched the actual navigation. There were 10 routes in the simulation phase. 
+
+------
+
+#### Target outcomes: 
+The target outcomes for this reproduction are outlined in Section 2.1.3 of Arnold et al. (2016):
+
+> Inspection of the route time histogram from the simulation phase revealed a number of trials in which participants became “lost” (see Fig. S1), which skewed the distribution. To control for this, we calculated the difference between the optimal route time and the observed route time (mean difference score = 14.27s; SD = 19.49). The resulting distribution was then used to remove trials in the top 25% of difference scores across participants (75% quartile = 21.66 s, 70 trials removed). This filtering strategy allowed for retention of variance in route time, while excluding trials that took approximately double the optimal route time (M = 24.85 s, SD = 7.16). Route performance on the filtered data set of 210 trials was near the optimal route time (mean difference score = 5.93 s, SD = 3.54).
+
+> Next, we assessed the relationship between simulation time (M = 14.41, SD = 11.21) and route navigation time (M = 35.81, SD = 9.25; see Fig. 2a–b). Simulation times were first mean-centered for each participant, providing a more precise estimate of coefficients as it minimizes variance in simulation time due to individual differences in overall temporal compression rate. We found a statistically significant positive correlation between the time it took a participant to subsequently navigate the route and the time it took them to mentally simulate it (r(208) = 0.30, p < 0.001, R2 = 0.09, Fig. 3C). We also found a significant positive correlation between simulation time and route distance (r(208) = 0.29, p < 0.001, R2 = 0.08); however, route time and distance for each trial were highly collinear (r(208) = 0.97, p < 0.001, R2 = 0.94). As such, the remainder of the analysis focuses on route time, which accounts for variance in non-movement related processes (e.g. making decisions at turning points) that are not represented in the distance measure. Our correlation reported here between simulation and route time is consistent with past findings from Kosslyn et al. (1978) who showed a correlation between the time it took participants to mentally scan between different locations on a map of an island and the physical distance between them.  (Arnold et al. 2016, p. 17)
+
+> We also tested our first hypothesis that simulation times would preserve the temporal component of the route in a compressed form. We did this by calculating the temporal compression rate as the ratio of simulation time to route time for each trial. This resulted in a mean ratio of 0.42 (SD = 0.33, Fig. 2C), supporting our hypothesis that temporal information is contained in mental simulations in a compressed form. This ratio indicates that partic- ipants on average mentally simulated routes at approximately 2.39 (SD = 3.04) times the rate that they subsequently navigate them.
+
+------
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+```{r}
+library(tidyverse) # for data munging
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CODreports) # custom report functions
+sem <- function(x) {sd(x, na.rm=TRUE) / sqrt(length(x))} # custom function to calculate standard error of the mean
+ci95 <- function(x) {sem(x) * 1.96} # custom function to calculate 95% confidence intervals
+```
+
+## Step 2: Load data
+
+```{r}
+d_raw <- read_csv("data/data3.csv")
+d_filtered <- read_csv("data/data1.csv")
+```
+
+## Step 3: Tidy data
+
+```{r}
+#The optimal times were copied out of data_1 for subject 26 in group 1 who had none of their trials excluded
+opt_times <- d_filtered %>%
+  filter(Group == 1, Participant ==26) %>%
+  select(Optimal)
+num_subs <- length(unique(d_raw$Participant))
+
+d_tidy <- d_raw %>%
+  rename(trial_num = X1, 
+         obs_route_time = Path_Time, 
+         distance = Distance, 
+         sim_time = Sim_Time, 
+         subid = Participant) %>%
+  select(subid, trial_num, obs_route_time, distance, sim_time) %>%
+  mutate(optimal_route_time = rep(opt_times$Optimal,num_subs))
+```
+
+## Step 4: Run analysis
+
+### Pre-processing
+
+> Inspection of the route time histogram from the simulation phase revealed a number of trials in which participants became “lost” (see Fig. S1), which skewed the distribution. To control for this, we calculated the difference between the optimal route time and the observed route time (mean difference score = 14.27s; SD = 19.49).
+
+```{r}
+d <- d_tidy %>%
+  mutate(diff = obs_route_time - optimal_route_time)
+
+summary(d$diff)
+mean_diff = mean(d$diff)
+sd_diff = sd(d$diff)
+
+compareValues(reportedValue = 14.27, obtainedValue = round(mean_diff,2))
+compareValues(reportedValue = 19.49, obtainedValue = round(sd_diff,2))
+```
+These summary statistics appear to differ from the values reported in the article, but DO match the information reported in the analysis script provided in the supplementary materials:
+
+![Supplementary analysis script summary statistics](images/supMat_1.png)
+
+
+```{r}
+ggplot(d, aes(x=diff)) +
+    geom_histogram(binwidth=20, boundary = 0, colour="black", fill="white")
+```
+
+![Supplementary Figure 1 - Distribution of difference scores](images/fig_s1.png)
+
+The distribution does not seem to quite match, between my figure and the one in the paper, and although the outliers are similar, the first two bins are different. The code in the supplementary material paper seems to indicate that they also used bins of 20, so it is not clear what the problem is here.
+
+> sns.distplot(p_data.Diff.dropna(), kde=False, bins=20);
+
+Now we look at the filtering strategy of removing the top 25% of difference scores:
+
+> The resulting distribution was then used to remove trials in the top 25% of difference scores across participants (75% quartile = 21.66 s, 70 trials removed). 
+
+```{r}
+# filter out the top 25% of difference times
+top_quant <- quantile(d$diff, .75) # identify cut-off for top 25% quantile
+compareValues(reportedValue = 21.66, obtainedValue = top_quant)
+
+d_topFilter <- d %>%
+  filter(d$diff < top_quant) # apply filter
+
+n_prefilter <- nrow(d) # number of rows pre-filter
+n_postfilter <- nrow(d_topFilter) # number of rows remaining.
+n_removed <- n_prefilter - n_postfilter # number of rows removed
+compareValues(reportedValue = 70, obtainedValue = n_removed)
+```
+
+The top quantile cut-off matches what was reported in the paper, and the same number of trials were filtered out using this criterion. (NB the cut-off does not match what was reported as a cut-off in the text of the supplemental materials: 14.95s).
+
+### Descriptive statistics
+
+> This filtering strategy allowed for retention of variance in route time, while excluding trials that took approximately double the optimal route time (M = 24.85 s, SD = 7.16).
+
+```{r}
+mean_opt <- mean(opt_times$Optimal)
+sd_opt <- sd(opt_times$Optimal)
+
+compareValues(reportedValue = 24.85, obtainedValue = round(mean_opt,2))
+compareValues(reportedValue = 7.15, obtainedValue = round(sd_opt, 2))
+```
+The mean and standard deviation of the route time are reported twice in the paper, once on page 16 and once on page 17. On the former the SD is reported as 7.15 and on the latter as 7.16. The latter is the result I found.
+
+We will now try to reproduce this outcome:
+
+> Route performance on the filtered data set of 210 trials was near the optimal route time (mean difference score = 5.93 s, SD = 3.54).
+
+```{r}
+mean_diff_filt = mean(d_topFilter$diff)
+sd_diff_filt = sd(d_topFilter$diff)
+
+compareValues(reportedValue = 5.93, obtainedValue = mean_diff_filt)
+compareValues(reportedValue = 3.54, obtainedValue = sd_diff_filt)
+```
+
+There are discrepances in the values we obtain and the reported mean and standard deviation of post filtering difference scores reported in the original article.
+
+Now we look at "simulation time" and "route navigation time".
+
+> Next, we assessed the relationship between simulation time (M = 14.41, SD = 11.21) and route navigation time (M = 35.81, SD = 9.25; see Fig. 2a–b). 
+
+```{r}
+mean_sim_time <- mean(d_topFilter$sim_time)
+compareValues(reportedValue = 14.41, obtainedValue = round(mean_sim_time, 2))
+sd_sim_time = sd(d_topFilter$sim_time)
+compareValues(reportedValue = 11.21, obtainedValue = round(sd_sim_time, 2))
+
+mean_nav_time = mean(d_topFilter$obs_route_time)
+compareValues(reportedValue = 35.81, obtainedValue = round(mean_nav_time, 2))
+sd_nav_time = sd(d_topFilter$obs_route_time)
+compareValues(reportedValue = 9.25, obtainedValue = round(sd_nav_time, 2))
+```
+
+The reported mean and SD for simulation time and route navigation times match those that I found here.
+
+Let's check if we can reproduce the middle (orange) bars of Figures 2a and 2b (route time and simulation time for study 1)
+
+![Figure 2](images/fig_2.png)
+
+
+```{r}
+d_topFilter %>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = mean(obs_route_time),
+            cis = ci95(obs_route_time)) %>%
+  ggplot(aes(x=group, y=mean)) +
+    geom_bar(stat="identity", fill="#FF6600") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Route Time") +
+  scale_x_discrete(breaks=NULL)
+```
+
+```{r}
+d_topFilter %>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = mean(sim_time),
+            cis = ci95(sim_time)) %>%
+  ggplot(aes(x=group, y=mean)) +
+    geom_bar(stat="identity", fill="#FF6600") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Seconds") + ggtitle("Simulation Time") +
+  scale_x_discrete(breaks=NULL)
+```
+
+
+
+
+> Simulation times were first mean-centered for each participant, providing a more precise estimate of coefficients as it minimizes variance in simulation time due to individual differences in overall temporal compression rate. 
+
+```{r}
+# mean center the simulation times for each participant then rejoin them with the rest of the data.
+d_centered <- d_topFilter %>%
+  group_by(subid)%>%
+  mutate(centered_sim_time = scale(sim_time, center = T, scale = F)[,1])%>%
+  group_by(subid, trial_num, add = FALSE) %>%
+  summarize(centered_sim_time = mean(centered_sim_time))
+
+d_cent <- right_join(d_topFilter, d_centered)
+```
+
+
+### Inferential statistics
+
+> We found a statistically significant positive correlation between the time it took a participant to subsequently navigate the route and the time it took them to mentally simulate it (r(208) = 0.30, p < 0.001, R2 = 0.09, Fig. 3C).
+
+```{r}
+cor.out <- cor.test(d_cent$obs_route_time, d_cent$centered_sim_time)
+compareValues(reportedValue = 208, obtainedValue = cor.out$parameter) # df
+compareValues(reportedValue = .30, obtainedValue = round(cor.out$estimate,2)) # r
+# exact p-value not provided but eyeballing shows this is a match
+
+cor.r2 <- (cor(d_cent$obs_route_time, d_cent$centered_sim_time))^2 #R2
+compareValues(reportedValue = .09, obtainedValue = round(cor.r2,2))
+```
+
+Using the centered simulation times for each participant, I found the same significant positive correlation between the time it took a participant to subsequently navigate the route and the time it took them to mentally simulate it as was found in the paper.
+
+> We also found a significant positive correlation between simulation time and route distance (r(208) = 0.29, p < 0.001, R2 = 0.08); 
+
+```{r}
+cor.out <- cor.test(d_cent$centered_sim_time, d_cent$distance)
+compareValues(reportedValue = 208, obtainedValue = cor.out$parameter) # df
+compareValues(reportedValue = .29, obtainedValue = round(cor.out$estimate,2)) # r
+# exact p-value not provided but eyeballing shows this is a match
+
+cor.r2 <- (cor(d_cent$centered_sim_time, d_cent$distance))^2
+compareValues(reportedValue = .08, obtainedValue = round(cor.r2,2))
+```
+
+Similarly, as in the paper, I too found a significant positive correlation between the centered simulation times and the route distance, with the same figures as found in the paper.
+
+> route time and distance for each trial were highly collinear (r(208) = 0.97, p < 0.001, R2 = 0.94).
+
+```{r}
+cor.out <- cor.test(d_cent$obs_route_time, d_cent$distance)
+compareValues(reportedValue = 208, obtainedValue = cor.out$parameter) # df
+compareValues(reportedValue = .97, obtainedValue = round(cor.out$estimate,2)) # r
+# exact p-value not provided but eyeballing shows this is a match
+
+cor.r2 <- (cor(d_cent$obs_route_time, d_cent$distance))^2
+compareValues(reportedValue = .94, obtainedValue = round(cor.r2,2))
+```
+
+As reported, the route navigation times and the route distance are highly colinear.
+
+> We also tested our first hypothesis that simulation times would preserve the temporal component of the route in a compressed form. We did this by calculating the temporal compression rate as the ratio of simulation time to route time for each trial. This resulted in a mean ratio of 0.42 (SD = 0.33, Fig. 2C), supporting our hypothesis that temporal information is contained in mental simulations in a compressed form.
+
+```{r}
+d_cent <- d_cent %>%
+  mutate(compression_rate = sim_time/obs_route_time)
+mean_comp = mean(d_cent$compression_rate)
+compareValues(reportedValue = .42, obtainedValue = round(mean_comp,2))
+sd_comp = sd(d_cent$compression_rate)
+compareValues(reportedValue = .33, obtainedValue = round(sd_comp,2))
+```
+
+> This ratio indicates that participants on average mentally simulated routes at approximately 2.39 (SD = 3.04) times the rate that they subsequently navigate them.
+
+The compression rate was calculated as the ratio of the (uncentered) simulation times to the route time for each trial.
+
+```{r}
+d_compRate <-d_cent %>%
+  mutate(group = 1) %>%
+  group_by(group) %>%
+  summarize(mean = 1/mean(compression_rate),
+            sd = 1/sd(compression_rate),
+            cis = ci95(compression_rate))
+
+compareValues(reportedValue = 2.39, obtainedValue = round(d_compRate$mean,2))
+compareValues(reportedValue = 3.04, obtainedValue = round(d_compRate$sd,2))
+```
+
+I found the same mean and SD compression rate as reported.
+ 
+Let's also compare that visually to the graph (compression rate, orange bar):
+
+```{r}
+d_compRate %>% ggplot(aes(x=group, y=mean)) +
+    geom_bar(stat="identity", fill="#FF6600") +
+    geom_errorbar(aes(ymin=mean-cis, ymax=mean+cis),
+                  width=.2, position=position_dodge(.9)) + xlab("Medium") + ylab("Factor") + ggtitle("Compression Rate") +
+  scale_x_discrete(breaks=NULL)
+```
+
+
+![](images/fig_2.png)
+
+
+## Step 5: Conclusion
+
+```{r}
+codReport(Report_Type = 'joint',
+          Article_ID = 'IeIFy', 
+          Insufficient_Information_Errors = 0,
+          Decision_Errors = 0, 
+          Major_Numerical_Errors = 4, 
+          Minor_Numerical_Errors = 3)
+```
+
+I found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with some of the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. These discrepancies could be related since they involve the same measure. I am not sure what might have caused the discrepancy though. Additionally the top quantile cut-off point reported in the text of the supplement was incorrect. This may have been calculated using a previous version of the data, and then manually inserted instead of using a variable.
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```

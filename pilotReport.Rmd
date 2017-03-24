@@ -8,7 +8,6 @@ output:
 
 #### Article ID: IeIFy
 #### Pilot: Sara Kessler
-#### Co-pilot: Tom Hardwicke  
 #### Start date: 03/20/2017
 #### End date: 03/20/2017   
 
