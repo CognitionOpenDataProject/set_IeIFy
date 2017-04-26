@@ -388,7 +388,7 @@ compareValues(reportedValue = 35.81, obtainedValue = round(mean_nav_time, 2))</c
 <pre class="r"><code>sd_nav_time &lt;- sd(d_topFilter$obs_route_time)
 compareValues(reportedValue = 9.25, obtainedValue = round(sd_nav_time, 2))</code></pre>
 <pre><code>## [1] &quot;MATCH. The reported value (9.25) and the obtained value (9.25) differed by 0%&quot;</code></pre>
-<p>The reported mean and SD for simulation time and route navigation times match those that I found here.</p>
+<p>The reported mean and SD for simulation time and route navigation times match those that we found here.</p>
 <pre class="r"><code>d_g1&lt;-d_topFilter %&gt;%
   mutate(group = 1) %&gt;%
   group_by(group) %&gt;%
@@ -442,7 +442,7 @@ compareValues(reportedValue = 208, obtainedValue = cor.out$parameter) # df</code
 <pre class="r"><code>compareValues(reportedValue = .09, obtainedValue = round(cor.out$estimate^2, 2)) # r2</code></pre>
 <pre><code>## [1] &quot;MATCH. The reported value (0.09) and the obtained value (0.09) differed by 0%&quot;</code></pre>
 <p>MATCH - The exact p-value is not reported in the paper, but by eyeballing we can see that the obtained value matches the reported boundary.</p>
-<p>Using the centered simulation times for each participant, I found the same significant positive correlation between the time it took a participant to subsequently navigate the route and the time it took them to mentally simulate it as was found in the paper.</p>
+<p>Using the centered simulation times for each participant, we found the same significant positive correlation between the time it took a participant to subsequently navigate the route and the time it took them to mentally simulate it as was found in the paper.</p>
 <blockquote>
 <p>We also found a significant positive correlation between simulation time and route distance (r(208) = 0.29, p &lt; 0.001, R2 = 0.08);</p>
 </blockquote>
@@ -497,7 +497,7 @@ compareValues(reportedValue = 208, obtainedValue = cor.out$parameter) # df</code
 </tr>
 </tbody>
 </table>
-<p>I found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. These discrepancies could be related since they involve the same measure. I am not sure what might have caused the discrepancy though. Additionally the top quantile cut-off point reported in the text of the supplement was off, but that was probably calculated using a previous version of the data, and then hard coded in instead of using a variable. There was a minor discrepancy in the reporting of the SD of optimal time route earlier in the paper. Finally, it is not clear how the confidence interval in Figure 2c in the paper is determined.</p>
+<p>We found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with some of the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. It is not clear what is causing the discrepancy, however the supplementary materials provided with the article do report the same values as we obtained here, and are different to those reported in the article. We should seek author clarification to see if they can help shed light on the problem.</p>
 <pre class="r"><code>devtools::session_info()</code></pre>
 <pre><code>##  setting  value                       
 ##  version  R version 3.3.2 (2016-10-31)
