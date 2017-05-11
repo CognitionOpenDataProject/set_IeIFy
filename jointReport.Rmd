@@ -10,7 +10,7 @@ output:
 #### Pilot: Sara Kessler
 #### Co-pilot: Tom Hardwicke  
 #### Start date: 03/20/2017
-#### End date:   
+#### End date: 05/10/2017
 
 -------
 
@@ -278,10 +278,13 @@ codReport(Report_Type = 'joint',
           Insufficient_Information_Errors = 0,
           Decision_Errors = 0, 
           Major_Numerical_Errors = 4, 
-          Minor_Numerical_Errors = 1)
+          Minor_Numerical_Errors = 1,
+          Author_Assistance = T)
 ```
 
-We found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with some of the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. It is not clear what is causing the discrepancy, however the supplementary materials provided with the article do report the same values as we obtained here, and are different to those reported in the article. We should seek author clarification to see if they can help shed light on the problem.
+We found that the inferential statistics were congruent with those reported in the paper. However, there were inconsistencies with some of the descriptive statistics reported in the paper. The mean and SD of the difference score between the optimal route time and the observed route time were different, as were the mean and SD of the difference score of the filtered data. 
+
+We contacted the original authors for clarification and they confirmed that the aforementioned values reported in the article are incorrect. The values obtained in our reanalysis, and reported in the original supplementary materials, are the correct values. The authors have indicated that they will contact the journal to correct these errors. Note that the errors do not appear to impact upon the substantive statistical conclusions of the article.
 
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
