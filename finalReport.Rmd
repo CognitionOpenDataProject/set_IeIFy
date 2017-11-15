@@ -300,7 +300,7 @@ reportObject$resolved_typo <- 0
 reportObject$resolved_specification <- 0
 reportObject$resolved_analysis <- 1
 reportObject$resolved_data <- 0
-reportObject$correctionSuggested <- T
+reportObject$correctionSuggested <- 'yes'
 reportObject$correctionPublished <- F
 
 # decide on final outcome

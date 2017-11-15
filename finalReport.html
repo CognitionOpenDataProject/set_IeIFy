@@ -497,7 +497,7 @@ reportObject$resolved_typo &lt;- 0
 reportObject$resolved_specification &lt;- 0
 reportObject$resolved_analysis &lt;- 1
 reportObject$resolved_data &lt;- 0
-reportObject$correctionSuggested &lt;- T
+reportObject$correctionSuggested &lt;- 'yes'
 reportObject$correctionPublished &lt;- F
 
 # decide on final outcome
@@ -715,7 +715,7 @@ write_csv(reportObject, filename)</code></pre>
 <td align="left">0</td>
 <td align="left">1</td>
 <td align="left">0</td>
-<td align="left">TRUE</td>
+<td align="left">yes</td>
 <td align="left">FALSE</td>
 <td align="left">Failure despite author assistance</td>
 </tr>
@@ -732,7 +732,7 @@ write_csv(reportObject, filename)</code></pre>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       &lt;NA&gt;                        
-##  date     2017-11-13                  
+##  date     2017-11-15                  
 ## 
 ##  package    * version    date      
 ##  assertthat   0.2.0      2017-04-11
