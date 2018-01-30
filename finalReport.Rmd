@@ -292,13 +292,13 @@ reportObject$Article_ID <- "IeIFy"
 reportObject$affectsConclusion <- "no"
 reportObject$error_typo <- 0
 reportObject$error_specification <- 0
-reportObject$error_analysis <- 0
+reportObject$error_analysis <- 1
 reportObject$error_data <- 0
 reportObject$error_unidentified <- 0
 reportObject$Author_Assistance <- T
 reportObject$resolved_typo <- 0
 reportObject$resolved_specification <- 0
-reportObject$resolved_analysis <- 1
+reportObject$resolved_analysis <- 0
 reportObject$resolved_data <- 0
 reportObject$correctionSuggested <- 'yes'
 reportObject$correctionPublished <- F
